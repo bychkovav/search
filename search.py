@@ -15,7 +15,7 @@ import util
 from Queue import *
 
 class Move:
-    def __init__(self, current, prev, action):
+    def __init__(self, current, prev, action, cost = 0):
         self.current  = current
         self.prev = prev
         self.action = action
@@ -28,6 +28,9 @@ class Move:
 
     def getAction(self):
         return self.action
+
+    def getCost(self):
+        return self.cost;
 
 
 
@@ -102,15 +105,12 @@ def depthFirstSearch(problem):
   print "Start's successors:", problem.getSuccessors(problem.getStartState())
   """
   "*** YOUR CODE HERE ***"
-
-  print  "Start:", problem.getStartState()
-  print  "Is the start a goal?", problem.isGoalState(problem.getStartState())
-  print "Start's successors:", problem.getSuccessors(problem.getStartState())
-
-  frontier  = Queue()
-  frontier.put(Move(problem.getStartState(), None, None))
-
+  frontier  = LifoQueue()
+  explored = []
   result = []
+
+  frontier.put(Move(problem.getStartState(), None, None))
+  explored.append(problem.getStartState())
 
   while frontier.qsize > 0:
       move = frontier.get()
@@ -122,22 +122,68 @@ def depthFirstSearch(problem):
       else:
           nextsuccessors = problem.getSuccessors(move.getState())
           for n in nextsuccessors:
-              newmove = Move(n[0], move, n[1])
-              frontier.put(newmove)
+              if n not in explored:
+                newmove = Move(n[0], move, n[1])
+                frontier.put(newmove)
+                explored.append(n)
 
   util.raiseNotDefined()
 
+
 def breadthFirstSearch(problem):
-  """
-  Search the shallowest nodes in the search tree first.
-  [2nd Edition: p 73, 3rd Edition: p 82]
-  """
-  "*** YOUR CODE HERE ***"
+  print  "Start:", problem.getStartState()
+  print  "Is the start a goal?", problem.isGoalState(problem.getStartState())
+  print "Start's successors:", problem.getSuccessors(problem.getStartState())
+
+  frontier  = Queue()
+  explored = []
+  result = []
+
+  frontier.put(Move(problem.getStartState(), None, None))
+  explored.append(problem.getStartState())
+
+  while frontier.qsize > 0:
+      move = frontier.get()
+      if problem.isGoalState(move.getState()):
+          while move.getPreviousMove() != None:
+              result.insert(0, move.getAction())
+              move = move.getPreviousMove()
+          return result
+      else:
+          nextsuccessors = problem.getSuccessors(move.getState())
+          for n in nextsuccessors:
+              if n not in explored:
+                newmove = Move(n[0], move, n[1])
+                frontier.put(newmove)
+                explored.append(n)
+
   util.raiseNotDefined()
       
 def uniformCostSearch(problem):
   "Search the node of least total cost first. "
   "*** YOUR CODE HERE ***"
+  frontier  = PriorityQueue()
+  explored = []
+  result = []
+
+  frontier.put((0, Move(problem.getStartState(), None, None, 0)))
+  explored.append(problem.getStartState())
+
+  while frontier.qsize > 0:
+      move = frontier.get()[1]
+      if problem.isGoalState(move.getState()):
+          while move.getPreviousMove() != None:
+              result.insert(0, move.getAction())
+              move = move.getPreviousMove()
+          return result
+      else:
+          nextsuccessors = problem.getSuccessors(move.getState())
+          for n in nextsuccessors:
+              if n not in explored:
+                newmove = Move(n[0], move, n[1])
+                frontier.put((n[2], newmove))
+                explored.append(n)
+
   util.raiseNotDefined()
 
 def nullHeuristic(state, problem=None):
